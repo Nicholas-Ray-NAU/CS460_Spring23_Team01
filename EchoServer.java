@@ -8,11 +8,15 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EchoServer {
+public class EchoServer extends Thread {
 
     private static ServerSocket serverSocket;
     private static int port;
     Socket clientSocket = null;
+
+    public EchoServer(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+    }
 
     public EchoServer(int port) {
         try {
@@ -34,12 +38,31 @@ public class EchoServer {
         while (true) {
             System.out.println("Waiting for connections on port #" + port);
 
-            handleClient(serverSocket.accept());
+            try {
+
+                (new EchoServer(serverSocket.accept())).start();
+
+            } catch (IOException exception) {
+
+                System.err.println("Error handing new client");
+
+            }
         }
     }
 
-    public void handleClient(Socket clientSocket) {
+    public static void main(String args[]) throws Exception {
+        // create instance of echo server
+        // note that hardcoding the port is bad, here we do it just for simplicity reasons
+        EchoServer echoServer = new EchoServer(23657);
 
+        // fire up server loop
+        echoServer.runServerLoop();
+    }
+
+    //@Override
+    public void run() {
+
+        // Handle every client in parallel
         DataInputStream fromClient = null;
         DataOutputStream toClient = null;
 
@@ -87,15 +110,5 @@ public class EchoServer {
         } catch (IOException e) {
             System.err.println("Error closing socket to client");
         }
-
-    }
-
-    public static void main(String args[]) throws Exception {
-        // create instance of echo server
-        // note that hardcoding the port is bad, here we do it just for simplicity reasons
-        EchoServer echoServer = new EchoServer(23657);
-
-        // fire up server loop
-        echoServer.runServerLoop();
     }
 }
