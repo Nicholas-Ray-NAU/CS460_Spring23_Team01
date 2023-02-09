@@ -1,24 +1,46 @@
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <pthread.h>
+/************************************************************************
+ * libraries
+ ************************************************************************/
+// should always be there ...
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+// threading
+#include <pthread.h>
+
+// socket/bind/listen/accept
+#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/stat.h>
+#include <netinet/in.h>
+#include <signal.h>
+
+// hostname utils
+#include <netdb.h>
+
+// read/write/close
+#include <sys/uio.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <syslog.h>
 
-/* Function prototypes */
-void* handle_client(void* arg);
+/************************************************************************
+ * function prototype declarations
+ ************************************************************************/
+void *handle_client(void *arg);
+void dayimeConnect(char * server_IP, int client_socket);
 
-/* Preprocessor directives */
-#define SERVER_ADDR "127.0.0.1" // loopback ip address
-#define PORT 23657              // port the server will listen on
+/************************************************************************
+ * preprocessor directives
+ ************************************************************************/
+#define SERVER_ADDR "127.0.0.1"        // loopback ip address
+#define HOSTWIND_ADDR "142.11.212.226" // Hostwinds IP address
+#define LISTEN_PORT 13                 // port the server will listen on
+#define TIME_PORT 13                   // Standard time server port
 
-#define FALSE 0
-#define TRUE !FALSE
+// I cannot let go of the old-fashioned way :) - for readability ...
+#define FALSE false
+#define TRUE !false
 
-#define NUM_CONNECTIONS 1       // number of pending connections in the connection queue
-
+// number of pending connections in the connection queue
+#define NUM_CONNECTIONS 1
