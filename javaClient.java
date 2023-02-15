@@ -1,27 +1,24 @@
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
-import java.net.InetAddress;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-public class javaClient implements javaClientConstants {
+import java.util.Scanner;
+
+public class javaClient {
 
     public static void main(String args[]) {
         Socket clientSocket = null;
         DataInputStream fromServer = null;
         DataOutputStream toServer = null;
         Boolean keepGoing = true;
-        int currChar = 0;
-        InetAddress hostAddress = null;
-        String serverIP = "";
+        int resultInt = 0;
+        Scanner input = new Scanner(System.in);
+        int inputNumber;
 
         try {
-            hostAddress = InetAddress.getByName(HOST_NAME);
-            serverIP = hostAddress.getHostAddress();
-
-            clientSocket = new Socket(serverIP, CONNECTION_PORT);
+            clientSocket = new Socket("127.0.0.1", 23657);
 
             fromServer = new DataInputStream(clientSocket.getInputStream());
             toServer = new DataOutputStream(clientSocket.getOutputStream());
@@ -30,18 +27,22 @@ public class javaClient implements javaClientConstants {
             keepGoing = false;
         }
 
-        while(keepGoing) {
-            try {
-                currChar = fromServer.readByte();
-                System.out.print((char)currChar);
-            } catch(IOException e) {
-                System.err.println("Error reading byte from server");
-            }
+        System.out.print("Input number: ");
+        inputNumber = input.nextInt();
 
-            if((char)currChar == END_MESSAGE_CHAR) {
-                keepGoing = false;
-            }
+        try {
+            toServer.writeByte((byte)inputNumber);
+        } catch(IOException e) {
+            System.err.println("Error reading byte from server");
         }
+
+        try {
+            resultInt = (int)fromServer.readByte();
+            System.out.println("Number of moves to get to 1: " + resultInt);
+        } catch(IOException e) {
+            System.err.println("Error reading byte from server");
+        }
+
         System.out.println(); // Print new line for better spacing
 
         try{
