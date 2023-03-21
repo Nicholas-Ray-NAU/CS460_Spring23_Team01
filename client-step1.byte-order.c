@@ -1,4 +1,4 @@
-#include "client-step1.no-frills.h"
+#include "client-step1.byte-order.h"
 
 /************************************************************************
  * MAIN
@@ -19,6 +19,7 @@ void collatzConnect(char * server_IP, int client_socket)
     {
     struct sockaddr_in client_address;  // client socket naming struct
     int int_buffer;                     // read char from server
+    unsigned long network_long_buff, result_long_buff;
 
     // create addr struct
     client_address.sin_family = AF_INET;
@@ -34,12 +35,18 @@ void collatzConnect(char * server_IP, int client_socket)
     printf("Input Number: ");
     scanf("%d", &int_buffer);
 
+    // Switch endianness of input integer
+    network_long_buff = htonl(int_buffer);
+
     //communicate to server
-    write(client_socket, &int_buffer, sizeof(int));
-    read(client_socket, &int_buffer, sizeof(int));
+    write(client_socket, &network_long_buff, sizeof(unsigned long));
+    read(client_socket, &result_long_buff, sizeof(unsigned long));
+
+    // Switch endianness of resulting integer
+    result_long_buff = ntohl(result_long_buff);
 
     // Print out result
-    printf("Number of moves to get to 1: %d", int_buffer);
+    printf("Number of moves to get to 1: %lu", result_long_buff);
     close(client_socket);
 
     printf("\nDone!\n");

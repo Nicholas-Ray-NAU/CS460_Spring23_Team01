@@ -1,4 +1,4 @@
-#include "server-step1.no-frills.h"
+#include "server-step1.byte-order.h"
 
 
 /* ************************************************************************* */
@@ -67,9 +67,11 @@ int main(int argc, char** argv) {
 
 void* handle_client(void* arg) { // xxxxx
     int client_socket = *((int*)arg);   // the socket connected to the client
-    int input, numSteps = 0, readResult;
+    int numSteps = 0, readResult;
+    unsigned long long_input, long_num_steps;
 
-    readResult = read(client_socket, &input, sizeof(int));
+    readResult = read(client_socket, &long_input, sizeof(int));
+    long_input = htonl(long_input);
 
     // read integer from client
     switch (readResult) {
@@ -83,17 +85,19 @@ void* handle_client(void* arg) { // xxxxx
 
     if(readResult != -1 && readResult != 0) {
         // Run algorithm
-        while(input > 1) {
-            if(input % 2 == 0) {
-                input /= 2;
+        while(long_input > 1) {
+            if(long_input % 2 == 0) {
+                long_input /= 2;
             } else {
-                input = (input * 3) + 1;
+                long_input = (long_input * 3) + 1;
             }
             numSteps++;
         }
 
+        long_num_steps = ntohl(numSteps);
+
         // send result back to client
-        write(client_socket, &numSteps, sizeof(int));
+        write(client_socket, &long_num_steps, sizeof(int));
     }
 
     // cleanup
